@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Router Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            min-height: 100vh;
+            padding: 40px 20px;
+            color: #fff;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            color: #b0b0b0;
+            font-size: 1rem;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 25px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(102, 126, 234, 0.3);
+            box-shadow: 0 8px 32px rgba(102, 126, 234, 0.1);
+        }
+
+        .card h2 {
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-icon {
+            font-size: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            color: #b0b0b0;
+            font-weight: 500;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 300px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            border-radius: 8px;
+            color: #fff;
+            padding: 15px;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 0.9rem;
+            resize: vertical;
+            transition: all 0.3s ease;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 20px rgba(102, 126, 234, 0.2);
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        textarea::placeholder {
+            color: #666;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: rgba(102, 126, 234, 0.2);
+            color: #667eea;
+            border: 1px solid #667eea;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(102, 126, 234, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .extracted-items {
+            margin-top: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .item-list {
+            list-style: none;
+        }
+
+        .item-list li {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 12px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            border-left: 3px solid #667eea;
+            font-size: 0.9rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .category-badge {
+            background: rgba(102, 126, 234, 0.3);
+            color: #667eea;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .category-badge.feature_request {
+            background: rgba(34, 197, 94, 0.3);
+            color: #22c55e;
+            border-color: #22c55e;
+        }
+
+        .category-badge.content_request {
+            background: rgba(59, 130, 246, 0.3);
+            color: #3b82f6;
+            border-color: #3b82f6;
+        }
+
+        .category-badge.technical_issue {
+            background: rgba(239, 68, 68, 0.3);
+            color: #ef4444;
+            border-color: #ef4444;
+        }
+
+        .routing-info {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            color: #b0b0b0;
+            margin-top: 5px;
+        }
+
+        .channel-tag {
+            background: rgba(59, 130, 246, 0.2);
+            color: #3b82f6;
+            padding: 2px 6px;
+            border-radius: 3px;
+            margin-left: 5px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666;
+        }
+
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid rgba(102, 126, 234, 0.5);
+            border-radius: 8px;
+            padding: 20px;
+            max-width: 350px;
+            backdrop-filter: blur(10px);
+            animation: slideIn 0.3s ease;
+            z-index: 1000;
+            box-shadow: 0 8px 32px rgba(102, 126, 234, 0.2);
+        }
+
+        .notification.success {
+            border-color: rgba(34, 197, 94, 0.5);
+        }
+
+        .notification.warning {
+            border-color: rgba(239, 68, 68, 0.5);
+        }
+
+        .notification-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .notification-icon {
+            font-size: 1.5rem;
+        }
+
+        .notification-content {
+            font-size: 0.9rem;
+            color: #b0b0b0;
+            line-height: 1.5;
+        }
+
+        .notification.success .notification-header {
+            color: #22c55e;
+        }
+
+        .notification.warning .notification-header {
+            color: #ef4444;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+            }
+            to {
+                opacity: 0;
+            }
+        }
+
+        .notification.hide {
+            animation: fadeOut 0.3s ease forwards;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: #b0b0b0;
+            margin-top: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            h1 {
+                font-size: 1.8rem;
+            }
+        }
+
+        .scrollbar-custom::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .scrollbar-custom::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+
+        .scrollbar-custom::-webkit-scrollbar-thumb {
+            background: rgba(102, 126, 234, 0.3);
+            border-radius: 10px;
+        }
+
+        .scrollbar-custom::-webkit-scrollbar-thumb:hover {
+            background: rgba(102, 126, 234, 0.5);
+        }
+
+        .extracted-items {
+            scrollbar-color: rgba(102, 126, 234, 0.3) rgba(255, 255, 255, 0.05);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📧 Email Router Dashboard</h1>
+            <p class="subtitle">Extract and route email issues to Slack channels</p>
+        </header>
+
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-number" id="stat-total">0</div>
+                <div class="stat-label">Total Items</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="stat-technical">0</div>
+                <div class="stat-label">Technical Issues</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="stat-feature">0</div>
+                <div class="stat-label">Feature Requests</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="stat-content">0</div>
+                <div class="stat-label">Content Requests</div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="card">
+                <h2><span class="card-icon">✉️</span>Email Input</h2>
+                <label for="emailInput">Paste your email content below:</label>
+                <textarea 
+                    id="emailInput" 
+                    placeholder="Paste email content here... (Try the sample email button to get started)"
+                ></textarea>
+                <div class="button-group">
+                    <button class="btn-primary" onclick="processEmail()">Process Email</button>
+                    <button class="btn-secondary" onclick="loadSampleEmail()">📋 Sample Email</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2><span class="card-icon">🎯</span>Extracted Items</h2>
+                <div id="extractedContainer" class="extracted-items scrollbar-custom">
+                    <div class="empty-state">
+                        <p>Process an email to see extracted items here</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sample email with various types of requests
+        const sampleEmail = `From: customer@example.com
+Subject: Multiple Issues and Requests
+Date: January 29, 2026
+
+Hi Support Team,
+
+I'm reaching out with several items:
+
+1. Technical Issue: The login page is showing a 503 error when I try to authenticate. This started happening yesterday around 2 PM. The error occurs consistently across Chrome and Firefox.
+
+2. Feature Request: It would be great if we could have dark mode in the dashboard. Many users have been asking for this feature.
+
+3. Content Request: Could you please update the documentation for the API endpoints? The current docs are from 2024 and don't match the current version.
+
+4. Technical Issue: The webhook integration keeps timing out. We need to increase the timeout threshold from 10 seconds to 30 seconds.
+
+5. Feature Request: Add export functionality to generate CSV reports directly from the dashboard.
+
+6. Sales Question: What are the pricing options for your enterprise tier? We have 500+ employees.
+
+Thanks,
+John Smith
+Senior Technical Lead`;
+
+        function loadSampleEmail() {
+            document.getElementById('emailInput').value = sampleEmail;
+            showNotification('Sample email loaded!', 'Click "Process Email" to extract items.', 'success');
+        }
+
+        // Email parsing and categorization
+        function processEmail() {
+            const email = document.getElementById('emailInput').value.trim();
+
+            if (!email.length) {
+                showNotification('Empty Email', 'Please paste an email or use the sample email.', 'warning');
+                return;
+            }
+
+            const items = extractItems(email);
+
+            if (items.length === 0) {
+                showNotification('No Items Found', 'Could not extract any items from the email.', 'warning');
+                return;
+            }
+
+            displayItems(items);
+            routeToChannels(items);
+            updateStats(items);
+            showNotification('Email Processed!', `Extracted ${items.length} items and routed to Slack channels.`, 'success');
+        }
+
+        function extractItems(email) {
+            const items = [];
+
+            // Patterns to detect different item types
+            const technicalPattern = /(?:technical\s+issue|bug|error|problem|issue|timeout|503|404|crash|fails?)\s*:?\s*([^.\n]+[.\n]?)/gi;
+            const featurePattern = /(?:feature\s+request|feature|enhancement|add|would\s+be\s+great\s+if)\s*:?\s*([^.\n]+[.\n]?)/gi;
+            const contentPattern = /(?:content\s+request|documentation|update|docs?|docs?)\s*:?\s*([^.\n]+[.\n]?)/gi;
+
+            // Extract technical issues
+            let match;
+            while ((match = technicalPattern.exec(email)) !== null) {
+                const description = match[1].trim().replace(/[\n.]/g, '').substring(0, 80);
+                if (description.length > 10) {
+                    items.push({
+                        category: 'technical_issue',
+                        description: description,
+                        channel: '#support-desk'
+                    });
+                }
+            }
+
+            // Extract feature requests
+            while ((match = featurePattern.exec(email)) !== null) {
+                const description = match[1].trim().replace(/[\n.]/g, '').substring(0, 80);
+                if (description.length > 10) {
+                    items.push({
+                        category: 'feature_request',
+                        description: description,
+                        channel: '#product-feedback'
+                    });
+                }
+            }
+
+            // Extract content requests
+            while ((match = contentPattern.exec(email)) !== null) {
+                const description = match[1].trim().replace(/[\n.]/g, '').substring(0, 80);
+                if (description.length > 10) {
+                    items.push({
+                        category: 'content_request',
+                        description: description,
+                        channel: '#cs-external'
+                    });
+                }
+            }
+
+            // Look for sales-related keywords
+            if (/pricing|enterprise|plan|sales|license/i.test(email)) {
+                const salesMatch = email.match(/(?:pricing|enterprise|sales|pricing options|tier)\s*[^.\n]{0,100}/i);
+                if (salesMatch) {
+                    items.push({
+                        category: 'sales_inquiry',
+                        description: salesMatch[0].substring(0, 80),
+                        channel: '#sales-leaders'
+                    });
+                }
+            }
+
+            // Remove duplicates
+            const uniqueItems = [];
+            const seen = new Set();
+            items.forEach(item => {
+                const key = item.category + '|' + item.description;
+                if (!seen.has(key)) {
+                    seen.add(key);
+                    uniqueItems.push(item);
+                }
+            });
+
+            return uniqueItems;
+        }
+
+        function displayItems(items) {
+            const container = document.getElementById('extractedContainer');
+            
+            if (items.length === 0) {
+                container.innerHTML = '<div class="empty-state"><p>No items extracted</p></div>';
+                return;
+            }
+
+            const itemsHTML = items.map((item, index) => `
+                <li>
+                    <div style="flex: 1;">
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 5px;">
+                            <span>${getCategoryEmoji(item.category)} ${item.description}</span>
+                        </div>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <span class="category-badge ${item.category}">${formatCategory(item.category)}</span>
+                            <span class="channel-tag">${item.channel}</span>
+                        </div>
+                    </div>
+                </li>
+            `).join('');
+
+            container.innerHTML = `<ul class="item-list">${itemsHTML}</ul>`;
+        }
+
+        function routeToChannels(items) {
+            const channels = {};
+
+            items.forEach(item => {
+                if (!channels[item.channel]) {
+                    channels[item.channel] = [];
+                }
+                channels[item.channel].push(item);
+            });
+
+            // Simulate sending to Slack channels
+            setTimeout(() => {
+                Object.entries(channels).forEach(([channel, channelItems], index) => {
+                    setTimeout(() => {
+                        const message = `${channelItems.length} item(s) routed`;
+                        showSlackNotification(channel, message, channelItems);
+                    }, index * 500);
+                });
+            }, 300);
+        }
+
+        function showSlackNotification(channel, message, items) {
+            const notif = document.createElement('div');
+            notif.className = 'notification success';
+            
+            const itemsList = items.map(item => 
+                `• ${formatCategory(item.category)}: ${item.description}`
+            ).join('<br>');
+
+            notif.innerHTML = `
+                <div class="notification-header">
+                    <span class="notification-icon">💬</span>
+                    <span>Slack: ${channel}</span>
+                </div>
+                <div class="notification-content">
+                    ${itemsList}
+                </div>
+            `;
+
+            document.body.appendChild(notif);
+
+            setTimeout(() => {
+                notif.classList.add('hide');
+                setTimeout(() => notif.remove(), 300);
+            }, 5000);
+        }
+
+        function showNotification(title, message, type = 'success') {
+            const notif = document.createElement('div');
+            notif.className = `notification ${type}`;
+            notif.innerHTML = `
+                <div class="notification-header">
+                    <span class="notification-icon">${type === 'success' ? '✅' : '⚠️'}</span>
+                    <span>${title}</span>
+                </div>
+                <div class="notification-content">
+                    ${message}
+                </div>
+            `;
+
+            document.body.appendChild(notif);
+
+            setTimeout(() => {
+                notif.classList.add('hide');
+                setTimeout(() => notif.remove(), 300);
+            }, 4000);
+        }
+
+        function updateStats(items) {
+            const stats = {
+                total: items.length,
+                technical_issue: 0,
+                feature_request: 0,
+                content_request: 0
+            };
+
+            items.forEach(item => {
+                if (item.category === 'technical_issue') stats.technical_issue++;
+                if (item.category === 'feature_request') stats.feature_request++;
+                if (item.category === 'content_request') stats.content_request++;
+            });
+
+            document.getElementById('stat-total').textContent = stats.total;
+            document.getElementById('stat-technical').textContent = stats.technical_issue;
+            document.getElementById('stat-feature').textContent = stats.feature_request;
+            document.getElementById('stat-content').textContent = stats.content_request;
+        }
+
+        function getCategoryEmoji(category) {
+            const emojis = {
+                technical_issue: '🔧',
+                feature_request: '✨',
+                content_request: '📝',
+                sales_inquiry: '💼'
+            };
+            return emojis[category] || '📌';
+        }
+
+        function formatCategory(category) {
+            return category
+                .split('_')
+                .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                .join(' ');
+        }
+
+        // Keyboard shortcut to process email
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                processEmail();
+            }
+        });
+    </script>
+</body>
+</html>
