@@ -475,73 +475,71 @@ Senior Technical Lead`;
 
         function extractItems(email) {
             const items = [];
-
-            // Patterns to detect different item types
-            const technicalPattern = /(?:technical\s+issue|bug|error|problem|issue|timeout|503|404|crash|fails?)\s*:?\s*([^.\n]+[.\n]?)/gi;
-            const featurePattern = /(?:feature\s+request|feature|enhancement|add|would\s+be\s+great\s+if)\s*:?\s*([^.\n]+[.\n]?)/gi;
-            const contentPattern = /(?:content\s+request|documentation|update|docs?|docs?)\s*:?\s*([^.\n]+[.\n]?)/gi;
-
-            // Extract technical issues
-            let match;
-            while ((match = technicalPattern.exec(email)) !== null) {
-                const description = match[1].trim().replace(/[\n.]/g, '').substring(0, 80);
-                if (description.length > 10) {
-                    items.push({
-                        category: 'technical_issue',
-                        description: description,
-                        channel: '#support-desk'
-                    });
-                }
-            }
-
-            // Extract feature requests
-            while ((match = featurePattern.exec(email)) !== null) {
-                const description = match[1].trim().replace(/[\n.]/g, '').substring(0, 80);
-                if (description.length > 10) {
-                    items.push({
-                        category: 'feature_request',
-                        description: description,
-                        channel: '#product-feedback'
-                    });
-                }
-            }
-
-            // Extract content requests
-            while ((match = contentPattern.exec(email)) !== null) {
-                const description = match[1].trim().replace(/[\n.]/g, '').substring(0, 80);
-                if (description.length > 10) {
-                    items.push({
-                        category: 'content_request',
-                        description: description,
-                        channel: '#cs-external'
-                    });
-                }
-            }
-
-            // Look for sales-related keywords
-            if (/pricing|enterprise|plan|sales|license/i.test(email)) {
-                const salesMatch = email.match(/(?:pricing|enterprise|sales|pricing options|tier)\s*[^.\n]{0,100}/i);
-                if (salesMatch) {
-                    items.push({
-                        category: 'sales_inquiry',
-                        description: salesMatch[0].substring(0, 80),
-                        channel: '#sales-leaders'
-                    });
-                }
-            }
-
-            // Remove duplicates
-            const uniqueItems = [];
             const seen = new Set();
-            items.forEach(item => {
-                const key = item.category + '|' + item.description;
-                if (!seen.has(key)) {
-                    seen.add(key);
-                    uniqueItems.push(item);
-                }
+
+            // Split email into sentences for better extraction
+            const sentences = email.match(/[^.!?]*[.!?]+/g) || [];
+
+            // Define keyword patterns for each category
+            const technicalKeywords = {
+                keywords: ['login', 'session expired', 'buffering', 'slow loading', 'slow', 'bug', 'error', 'crash', 'not working', 'broken', 'timeout', '503', '404', 'connection', 'fails', 'stopped working', 'stopped', 'issue', 'problem'],
+                category: 'technical_issue',
+                channel: '#support-desk'
+            };
+
+            const contentKeywords = {
+                keywords: ['3d tour', '3d tours', 'add properties', 'property', 'photography upload', 'reshoots', 'reshoot', 'photos', 'images', 'upload', 'new property'],
+                category: 'content_request',
+                channel: '#cs-external'
+            };
+
+            const featureKeywords = {
+                keywords: ['show rates', 'rates', 'new feature', 'feature', 'suggestion', 'suggestions', 'would be nice', 'would be great', 'could you', 'can we', 'add', 'implement'],
+                category: 'feature_request',
+                channel: '#product-feedback'
+            };
+
+            const salesKeywords = {
+                keywords: ['pricing', 'upgrade', 'quote', 'contract', 'purchase', 'plan', 'enterprise', 'license', 'cost', 'price', 'how much'],
+                category: 'sales_inquiry',
+                channel: '#sales-leaders'
+            };
+
+            const keywordGroups = [technicalKeywords, contentKeywords, featureKeywords, salesKeywords];
+
+            // Process each sentence
+            sentences.forEach(sentence => {
+                const cleanSentence = sentence.trim();
+                if (cleanSentence.length < 10) return;
+
+                // Check which category this sentence belongs to
+                keywordGroups.forEach(group => {
+                    const lowerSentence = cleanSentence.toLowerCase();
+                    const hasKeyword = group.keywords.some(keyword => lowerSentence.includes(keyword.toLowerCase()));
+
+                    if (hasKeyword) {
+                        // Clean up the sentence for display
+                        let description = cleanSentence
+                            .replace(/[.!?]+$/, '')  // Remove ending punctuation
+                            .trim()
+                            .substring(0, 100);
+
+                        // Create a unique key to avoid duplicates
+                        const key = group.category + '|' + description.toLowerCase();
+
+                        if (!seen.has(key) && description.length > 15) {
+                            seen.add(key);
+                            items.push({
+                                category: group.category,
+                                description: description,
+                                channel: group.channel
+                            });
+                        }
+                    }
+                });
             });
 
-            return uniqueItems;
+            return items;
         }
 
         function displayItems(items) {
